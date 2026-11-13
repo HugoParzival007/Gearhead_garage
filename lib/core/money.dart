@@ -6,9 +6,16 @@ final RegExp _decPart = RegExp(r'^\d+$');
 
 /// Converte texto em reais (ex.: `1.234,56`, `R$ 10`) para centavos exatos.
 ///
+/// `R$` só é aceito como prefixo; espaços só nas pontas. No máximo 10
+/// dígitos nos reais (R$ 9.999.999.999,99), para que quantidade x preço
+/// não estoure `int`.
+///
 /// Lança [FormatException] com mensagem em pt-BR pronta para a UI.
 int parseBrlToCents(String input) {
-  var s = input.replaceAll('R\$', '').replaceAll(RegExp(r'\s'), '');
+  final trimmed = input.trim();
+  final s = trimmed.startsWith('R\$')
+      ? trimmed.substring(2).trimLeft()
+      : trimmed;
   if (s.isEmpty) {
     throw const FormatException('O valor está vazio. Informe um valor.');
   }
@@ -29,7 +36,7 @@ int parseBrlToCents(String input) {
     throw const FormatException('Use no máximo 2 casas decimais.');
   }
   final reaisText = intText.replaceAll('.', '');
-  if (reaisText.length > 14) {
+  if (reaisText.length > 10) {
     throw const FormatException('Valor muito grande.');
   }
   final reais = int.parse(reaisText);

@@ -9,6 +9,23 @@ void main() {
       expect(parseBrlToCents('R\$ 10'), 1000);
       expect(parseBrlToCents('0,05'), 5);
       expect(parseBrlToCents(' 7 '), 700);
+      expect(parseBrlToCents('  R\$  10,00 '), 1000);
+    });
+
+    test('R\$ só como prefixo; espaços só nas pontas', () {
+      for (final s in ['1R\$0', '10R\$', '10 5', '1 234,56', '1.234, 56']) {
+        expect(
+          () => parseBrlToCents(s),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              contains('inválido'),
+            ),
+          ),
+          reason: s,
+        );
+      }
     });
 
     test('rejeita entradas inválidas com mensagem específica', () {
@@ -34,11 +51,13 @@ void main() {
   });
 
   group('limite de tamanho', () {
-    test('rejeita mais de 14 dígitos nos reais', () {
+    test('rejeita mais de 10 dígitos nos reais', () {
       for (final s in [
         '99999999999999999999',
         '100000000000000',
         '92233720368547759',
+        '10000000000',
+        '10.000.000.000,00',
       ]) {
         expect(
           () => parseBrlToCents(s),
@@ -53,8 +72,9 @@ void main() {
       }
     });
 
-    test('aceita 14 dígitos', () {
-      expect(parseBrlToCents('99999999999999,99'), 9999999999999999);
+    test('aceita 10 dígitos', () {
+      expect(parseBrlToCents('9999999999,99'), 999999999999);
+      expect(parseBrlToCents('9.999.999.999,99'), 999999999999);
     });
   });
 
