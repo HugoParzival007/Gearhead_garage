@@ -10,7 +10,7 @@ Spec completo: [design](superpowers/specs/2026-11-12-diario-de-garagem-design.md
 
 | Marco | Entrega |
 |---|---|
-| M1a | Fundação: schema Drift com UUID e campos de sync; garagem de veículos (carro ou moto); modificações e manutenções com peças (LineItem); custos por categoria; status de mod (planejada/instalada/removida); orçamento do projeto por veículo; campos de regularização (CSV) |
+| M1a (concluído) | Fundação: schema Drift com UUID e campos de sync; garagem de veículos (carro ou moto); modificações e manutenções com peças (LineItem); custos por categoria; status de mod (planejada/instalada/removida); orçamento do projeto por veículo; campos de regularização (CSV) |
 | M1b | Lembretes por km ou data (o que vier primeiro) + notificações locais; KmLog |
 | M1c | Anexos (fotos e nota fiscal) + backup e restauração por arquivo; anexo CSV de regularização |
 | M1d | Telemetria opt-in, onboarding, limite de 2 veículos ativos, polimento para o beta |

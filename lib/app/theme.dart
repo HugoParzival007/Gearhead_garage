@@ -28,6 +28,13 @@ abstract final class AppColors {
 
   /// Dark mode text.
   static const textoEscuro = Color(0xFFE3E8E4);
+
+  /// [token] as text or thin lines: in dark mode, lightened 40% toward white
+  /// so green and red stay AA-legible on the dark background.
+  static Color legible(Color token, Brightness brightness) =>
+      brightness == Brightness.dark
+      ? Color.lerp(token, Colors.white, 0.4)!
+      : token;
 }
 
 /// Font families declared in pubspec.yaml.

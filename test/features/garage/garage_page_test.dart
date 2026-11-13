@@ -3,6 +3,9 @@ import 'package:diario_de_garagem/app/theme.dart';
 import 'package:diario_de_garagem/data/database/app_database.dart';
 import 'package:diario_de_garagem/data/database/enums.dart';
 import 'package:diario_de_garagem/data/models/drafts.dart';
+import 'package:diario_de_garagem/data/repositories/maintenance_repository.dart';
+import 'package:diario_de_garagem/data/repositories/modification_repository.dart';
+import 'package:diario_de_garagem/data/repositories/vehicle_repository.dart';
 import 'package:diario_de_garagem/features/garage/garage_bloc.dart';
 import 'package:diario_de_garagem/features/garage/garage_page.dart';
 import 'package:diario_de_garagem/features/garage/vehicle_form_page.dart';
@@ -14,6 +17,12 @@ import 'package:mocktail/mocktail.dart';
 
 class _MockGarageBloc extends MockBloc<GarageEvent, GarageState>
     implements GarageBloc {}
+
+class _MockVehicles extends Mock implements VehicleRepository {}
+
+class _MockMods extends Mock implements ModificationRepository {}
+
+class _MockMaintenance extends Mock implements MaintenanceRepository {}
 
 Vehicle _vehicle(String id, String nickname, VehicleType type) => Vehicle(
   id: id,
@@ -39,11 +48,26 @@ void main() {
 
     Future<void> pumpPage(WidgetTester tester, GarageState state) async {
       when(() => bloc.state).thenReturn(state);
+      // The detail page opened from the list watches these.
+      final vehicles = _MockVehicles();
+      final mods = _MockMods();
+      final maintenance = _MockMaintenance();
+      when(() => vehicles.watchById(any())).thenAnswer((_) => Stream.empty());
+      when(() => mods.watchByVehicle(any())).thenAnswer((_) => Stream.empty());
+      when(() => maintenance.watchByVehicle(any()))
+          .thenAnswer((_) => Stream.empty());
       await tester.pumpWidget(
-        _host(
-          BlocProvider<GarageBloc>.value(
-            value: bloc,
-            child: const GaragePage(),
+        MultiRepositoryProvider(
+          providers: [
+            RepositoryProvider<VehicleRepository>.value(value: vehicles),
+            RepositoryProvider<ModificationRepository>.value(value: mods),
+            RepositoryProvider<MaintenanceRepository>.value(value: maintenance),
+          ],
+          child: _host(
+            BlocProvider<GarageBloc>.value(
+              value: bloc,
+              child: const GaragePage(),
+            ),
           ),
         ),
       );
@@ -107,7 +131,9 @@ void main() {
       );
 
       await tester.tap(find.text('Golzinho'));
-      await tester.pumpAndSettle();
+      // The detail keeps a loading spinner: pumpAndSettle would not settle.
+      await tester.pump();
+      await tester.pump(const Duration(seconds: 1));
 
       verify(() => bloc.add(const GarageVehicleSelected('a'))).called(1);
       expect(find.byType(VehicleDetailPage), findsOneWidget);
