@@ -16,7 +16,7 @@ UI (`features/`) → BLoC/Cubit → repositórios (`data/repositories/`) → Dri
 - Datas gravadas como texto ISO-8601 (`store_date_time_values_as_text: true` em `build.yaml`).
 - Enums gravados como texto (`textEnum<T>()`), nunca índice inteiro.
 - Textos da UI em pt-BR, direto no código no M1a (l10n depois). O `MaterialApp` fixa o locale `pt_BR` com `GlobalMaterialLocalizations.delegates` (exportado por `material_ui`, sem dependência nova): seletor de data, botões e textos do Material em português, e digitação de data no formato dd/mm/aaaa.
-- A UI importa `package:material_ui/material_ui.dart`; `package:flutter/material.dart` está obsoleto no Flutter 3.50.
+- A UI importa `package:material_ui/material_ui.dart`, nunca `package:flutter/material.dart`. Motivo: no Flutter 3.50 os widgets Material saíram do SDK para o pacote `material_ui`, e `package:flutter/material.dart` ficou marcado como `@Deprecated`. O próprio `flutter create` do 3.50 já gera o projeto com `material_ui`. Importar o caminho antigo gera avisos de obsolescência e quebra a regra de `flutter analyze` sem avisos. O pacote é local (sem rede), e a versão fica no `pubspec.yaml`.
 - Nenhum dado sai do aparelho no M1a: sem pacotes de rede, analytics ou Firebase.
 - `flutter analyze` sem avisos e `flutter test` verde ao fim de cada tarefa.
 - Commits em Conventional Commits, em inglês.

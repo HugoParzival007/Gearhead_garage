@@ -241,7 +241,7 @@ diario_de_garagem/
 - Produces:
   - `class CostSummary` (Equatable): `int spentCents`, `int plannedCents`, `int modsSpentCents`, `int maintenanceSpentCents`, `Map<ModCategory, int> spentByCategory` (só categorias com valor > 0), `int? budgetCents`, `int? remainingCents` (= budget − spent; nulo sem orçamento; pode ser negativo)
   - `static CostSummary compute({required List<ModificationWithItems> mods, required List<MaintenanceWithItems> maintenance, int? budgetCents})`
-  - Regras: mods `installed` e `removed` entram no gasto; `planned` entra só em `plannedCents`, usando `totalCents` se tiver peças ou mão de obra, senão `estimatedCostCents ?? 0`; toda manutenção entra no gasto.
+  - Regras: mods `installed` e `removed` entram no gasto; `planned` entra só em `plannedCents`, usando `totalCents` se o custo registrado for maior que zero (peças vivas + mão de obra > 0, função única `hasRecordedCost` em `lib/domain/cost_summary.dart`, usada também pela linha do tempo), senão `estimatedCostCents ?? 0`. Peças cadastradas sem preço contam como mod ainda não orçada (decisão da revisão final: tela e total precisam concordar); toda manutenção entra no gasto.
   - `sealed class TimelineEntry` com `ModificationEntry(ModificationWithItems)` e `MaintenanceEntry(MaintenanceWithItems)`; `List<TimelineEntry> buildTimeline(mods, maintenance)` — ordem `date` desc, empate por `km` desc (nulo por último).
 
 - [ ] **Step 1: Testes que falham:**
