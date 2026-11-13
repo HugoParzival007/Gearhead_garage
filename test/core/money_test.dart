@@ -33,6 +33,31 @@ void main() {
     });
   });
 
+  group('limite de tamanho', () {
+    test('rejeita mais de 14 dígitos nos reais', () {
+      for (final s in [
+        '99999999999999999999',
+        '100000000000000',
+        '92233720368547759',
+      ]) {
+        expect(
+          () => parseBrlToCents(s),
+          throwsA(
+            isA<FormatException>().having(
+              (e) => e.message,
+              'message',
+              'Valor muito grande.',
+            ),
+          ),
+        );
+      }
+    });
+
+    test('aceita 14 dígitos', () {
+      expect(parseBrlToCents('99999999999999,99'), 9999999999999999);
+    });
+  });
+
   group('formatBrl', () {
     test('formata centavos', () {
       expect(formatBrl(123456), 'R\$ 1.234,56');

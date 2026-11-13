@@ -28,7 +28,11 @@ int parseBrlToCents(String input) {
   if (decText.length > 2) {
     throw const FormatException('Use no máximo 2 casas decimais.');
   }
-  final reais = int.parse(intText.replaceAll('.', ''));
+  final reaisText = intText.replaceAll('.', '');
+  if (reaisText.length > 14) {
+    throw const FormatException('Valor muito grande.');
+  }
+  final reais = int.parse(reaisText);
   final cents = decText.isEmpty ? 0 : int.parse(decText.padRight(2, '0'));
   return reais * 100 + cents;
 }
