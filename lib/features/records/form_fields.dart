@@ -152,10 +152,12 @@ class DateFormField extends StatelessWidget {
 }
 
 /// Asks before a destructive action. Returns true on confirm.
+/// [confirmLabel] is verb + object, e.g. "Excluir modificação".
 Future<bool> confirmDelete(
   BuildContext context, {
   required String title,
   required String body,
+  required String confirmLabel,
 }) async {
   final ok = await showDialog<bool>(
     context: context,
@@ -173,7 +175,7 @@ Future<bool> confirmDelete(
             foregroundColor: Colors.white,
           ),
           onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Excluir'),
+          child: Text(confirmLabel),
         ),
       ],
     ),

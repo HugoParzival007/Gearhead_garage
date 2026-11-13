@@ -198,6 +198,34 @@ void main() {
     expect(find.byType(MaintenanceFormPage), findsOneWidget);
   });
 
+  testWidgets('last timeline row clears the FAB above the bottom inset', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(390 * 3, 844 * 3);
+    tester.view.devicePixelRatio = 3;
+    // Edge-to-edge gesture bar: both padding and viewPadding.
+    tester.view.padding = const FakeViewPadding(bottom: 48 * 3);
+    tester.view.viewPadding = const FakeViewPadding(bottom: 48 * 3);
+    addTearDown(tester.view.reset);
+    await pump(
+      tester,
+      _ready(mods: [for (var i = 0; i < 12; i++) mod(id: '$i')]),
+    );
+
+    await tester.fling(
+      find.byType(CustomScrollView),
+      const Offset(0, -5000),
+      3000,
+    );
+    await tester.pumpAndSettle();
+
+    final lastRow = tester.getRect(
+      find.ancestor(of: find.text('Mod 11'), matching: find.byType(InkWell)),
+    );
+    final fab = tester.getRect(find.byType(FloatingActionButton));
+    expect(lastRow.bottom, lessThan(fab.top));
+  });
+
   testWidgets('notFound shows a message', (tester) async {
     await pump(
       tester,

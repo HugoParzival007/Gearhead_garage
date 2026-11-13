@@ -138,6 +138,7 @@ class _ModificationFormPageState extends State<ModificationFormPage> {
     final ok = await confirmDelete(
       context,
       title: 'Excluir modificação?',
+      confirmLabel: 'Excluir modificação',
       body:
           'A modificação e as peças dela saem da linha do tempo e dos totais.',
     );

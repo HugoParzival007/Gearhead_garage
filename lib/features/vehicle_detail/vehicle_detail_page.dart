@@ -215,8 +215,10 @@ class _Body extends StatelessWidget {
             itemBuilder: (context, i) =>
                 _TimelineRow(entry: timeline[i], vehicleId: vehicle.id),
           ),
-        // Room for the FAB over the last row.
-        const SliverToBoxAdapter(child: SizedBox(height: 96)),
+        // Room for the FAB over the last row, above the system bottom inset.
+        SliverToBoxAdapter(
+          child: SizedBox(height: 96 + MediaQuery.paddingOf(context).bottom),
+        ),
       ],
     );
   }

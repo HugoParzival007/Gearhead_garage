@@ -108,6 +108,7 @@ class _MaintenanceFormPageState extends State<MaintenanceFormPage> {
     final ok = await confirmDelete(
       context,
       title: 'Excluir manutenção?',
+      confirmLabel: 'Excluir manutenção',
       body: 'A manutenção e as peças dela saem da linha do tempo e dos totais.',
     );
     if (ok) await cubit.deleteMaintenance(widget.initial!.record.id);

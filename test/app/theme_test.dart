@@ -20,6 +20,26 @@ void main() {
     expect(t.colorScheme.surface, AppColors.fundoEscuro);
     expect(t.colorScheme.surfaceContainer, AppColors.superficieEscura);
     expect(t.colorScheme.onSurface, AppColors.textoEscuro);
-    expect(t.colorScheme.error, AppColors.faixaVermelha);
+  });
+
+  test('dark error is the legible red, with dark text on it', () {
+    final s = AppTheme.dark().colorScheme;
+    final legibleRed = AppColors.legible(
+      AppColors.faixaVermelha,
+      Brightness.dark,
+    );
+    expect(s.error, legibleRed);
+    expect(s.error, isNot(AppColors.faixaVermelha));
+    expect(s.onError, AppColors.fundoEscuro);
+
+    double contrast(Color a, Color b) {
+      final la = a.computeLuminance(), lb = b.computeLuminance();
+      final (hi, lo) = la > lb ? (la, lb) : (lb, la);
+      return (hi + 0.05) / (lo + 0.05);
+    }
+
+    // AA for normal text: error text on the background, onError on error.
+    expect(contrast(s.error, s.surface), greaterThanOrEqualTo(4.5));
+    expect(contrast(s.onError, s.error), greaterThanOrEqualTo(4.5));
   });
 }

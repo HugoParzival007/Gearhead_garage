@@ -82,7 +82,7 @@ abstract final class AppTheme {
   );
 
   static ThemeData dark() => _build(
-    const ColorScheme(
+    ColorScheme(
       brightness: Brightness.dark,
       primary: AppColors.textoEscuro,
       onPrimary: AppColors.fundoEscuro,
@@ -90,8 +90,9 @@ abstract final class AppTheme {
       onSecondary: AppColors.fundoEscuro,
       tertiary: AppColors.instalado,
       onTertiary: Colors.white,
-      error: AppColors.faixaVermelha,
-      onError: Colors.white,
+      // #C8102E fails AA on the dark background; dark text on the lighter red.
+      error: AppColors.legible(AppColors.faixaVermelha, Brightness.dark),
+      onError: AppColors.fundoEscuro,
       surface: AppColors.fundoEscuro,
       onSurface: AppColors.textoEscuro,
       onSurfaceVariant: Color(0xFFAEB8C0),

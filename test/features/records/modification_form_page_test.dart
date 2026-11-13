@@ -183,7 +183,12 @@ void main() {
       verifyNever(() => mods.softDelete(any()));
 
       await tapVisible(tester, find.text('Excluir modificação'));
-      await tester.tap(find.widgetWithText(FilledButton, 'Excluir'));
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.widgetWithText(FilledButton, 'Excluir modificação'),
+        ),
+      );
       await tester.pumpAndSettle();
       verify(() => mods.softDelete('m')).called(1);
     });
