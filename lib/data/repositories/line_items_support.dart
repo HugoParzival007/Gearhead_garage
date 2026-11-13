@@ -105,7 +105,9 @@ class LineItemsSupport {
               i.parentId.equals(parentId) &
               i.deletedAt.isNull(),
         ))
-        .write(LineItemsCompanion(deletedAt: Value(now)));
+        .write(
+          LineItemsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+        );
   }
 
   Future<Map<String, List<LineItem>>> load(

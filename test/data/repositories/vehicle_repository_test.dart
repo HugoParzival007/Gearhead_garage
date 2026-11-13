@@ -156,6 +156,15 @@ void main() {
     expect(items['i1']!.deletedAt, d);
     expect(items['i2']!.deletedAt, d);
     expect(items['io']!.deletedAt, isNull);
+
+    expect(v.updatedAt, d);
+    expect(mods['m1']!.updatedAt, d);
+    expect(mods['m2']!.updatedAt, now);
+    expect(mods['mo']!.updatedAt, now);
+    expect(ms['r1']!.updatedAt, d);
+    expect(items['i1']!.updatedAt, d);
+    expect(items['i2']!.updatedAt, d);
+    expect(items['io']!.updatedAt, now);
   });
 
   test('create validates input', () {

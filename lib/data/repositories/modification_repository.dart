@@ -154,9 +154,11 @@ class ModificationRepository {
     return _db.transaction(() async {
       final now = _clock();
       await _items.softDeleteFor(LineItemParent.modification, id, now);
-      await (_db.update(_db.modifications)
-            ..where((m) => m.id.equals(id) & m.deletedAt.isNull()))
-          .write(ModificationsCompanion(deletedAt: Value(now)));
+      await (_db.update(
+        _db.modifications,
+      )..where((m) => m.id.equals(id) & m.deletedAt.isNull())).write(
+        ModificationsCompanion(deletedAt: Value(now), updatedAt: Value(now)),
+      );
     });
   }
 }

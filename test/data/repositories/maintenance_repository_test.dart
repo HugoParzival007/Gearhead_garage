@@ -83,7 +83,11 @@ void main() {
     expect(m.totalCents, 30000);
     expect(m.record.createdAt, created.createdAt);
     expect(m.record.updatedAt.isAfter(created.updatedAt), isTrue);
-    expect((await db.select(db.lineItems).get()).length, 3);
+    final all = await db.select(db.lineItems).get();
+    expect(all.length, 3);
+    for (final i in all.where((i) => i.deletedAt != null)) {
+      expect(i.updatedAt, i.deletedAt);
+    }
   });
 
   test('stream re-emits when only items change', () async {
@@ -108,7 +112,12 @@ void main() {
     ]);
     await repo.softDelete(id);
     expect(await list(), isEmpty);
-    expect((await db.select(db.lineItems).get()).single.deletedAt, isNotNull);
+    final it = (await db.select(db.lineItems).get()).single;
+    expect(it.deletedAt, isNotNull);
+    expect(it.updatedAt, it.deletedAt);
+    final rec = (await db.select(db.maintenanceRecords).get()).single;
+    expect(rec.deletedAt, isNotNull);
+    expect(rec.updatedAt, rec.deletedAt);
   });
 
   test('orders by date desc then createdAt desc', () async {
@@ -119,27 +128,39 @@ void main() {
   });
 
   test('validation errors', () async {
-    expect(() => repo.save(_d(vid, labor: -1), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid, km: -1), []), throwsArgumentError);
-    expect(
+    await expectLater(
+      () => repo.save(_d(vid, labor: -1), []),
+      throwsArgumentError,
+    );
+    await expectLater(
+      () => repo.save(_d(vid, km: -1), []),
+      throwsArgumentError,
+    );
+    await expectLater(
       () => repo.save(_d(vid), const [
         LineItemDraft('A', quantity: 0, unitPriceCents: 1),
       ]),
       throwsArgumentError,
     );
-    expect(
+    await expectLater(
       () => repo.save(_d(vid), const [LineItemDraft('A', unitPriceCents: -1)]),
       throwsArgumentError,
     );
-    expect(() => repo.save(_d('nope'), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid), [], id: 'missing'), throwsArgumentError);
+    await expectLater(() => repo.save(_d('nope'), []), throwsArgumentError);
+    await expectLater(
+      () => repo.save(_d(vid), [], id: 'missing'),
+      throwsArgumentError,
+    );
     expect(await list(), isEmpty);
   });
 
   test('save with deleted id throws', () async {
     final id = await repo.save(_d(vid), []);
     await repo.softDelete(id);
-    expect(() => repo.save(_d(vid), [], id: id), throwsArgumentError);
+    await expectLater(
+      () => repo.save(_d(vid), [], id: id),
+      throwsArgumentError,
+    );
   });
 
   test('km raises vehicle odometer', () async {

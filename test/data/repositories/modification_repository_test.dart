@@ -97,6 +97,9 @@ void main() {
     final all = await db.select(db.lineItems).get();
     expect(all.length, 3);
     final deleted = all.where((i) => i.deletedAt != null).toList();
+    for (final i in deleted) {
+      expect(i.updatedAt, i.deletedAt);
+    }
     expect(deleted.length, 2);
     expect(deleted.map((i) => i.deletedAt).toSet().length, 1);
   });
@@ -126,8 +129,12 @@ void main() {
     ]);
     await repo.softDelete(id);
     expect(await list(), isEmpty);
-    final items = await db.select(db.lineItems).get();
-    expect(items.single.deletedAt, isNotNull);
+    final it = (await db.select(db.lineItems).get()).single;
+    expect(it.deletedAt, isNotNull);
+    expect(it.updatedAt, it.deletedAt);
+    final rec = (await db.select(db.modifications).get()).single;
+    expect(rec.deletedAt, isNotNull);
+    expect(rec.updatedAt, rec.deletedAt);
   });
 
   test('orders by date desc then createdAt desc', () async {
@@ -146,33 +153,51 @@ void main() {
   });
 
   test('validation errors', () async {
-    expect(
+    await expectLater(
       () => repo.save(_d(vid, regStatus: RegularizationStatus.pending), []),
       throwsArgumentError,
     );
-    expect(() => repo.save(_d(vid, title: '  '), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid, labor: -1), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid, est: -1), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid, km: -1), []), throwsArgumentError);
-    expect(
+    await expectLater(
+      () => repo.save(_d(vid, title: '  '), []),
+      throwsArgumentError,
+    );
+    await expectLater(
+      () => repo.save(_d(vid, labor: -1), []),
+      throwsArgumentError,
+    );
+    await expectLater(
+      () => repo.save(_d(vid, est: -1), []),
+      throwsArgumentError,
+    );
+    await expectLater(
+      () => repo.save(_d(vid, km: -1), []),
+      throwsArgumentError,
+    );
+    await expectLater(
       () => repo.save(_d(vid), const [
         LineItemDraft('A', quantity: 0, unitPriceCents: 1),
       ]),
       throwsArgumentError,
     );
-    expect(
+    await expectLater(
       () => repo.save(_d(vid), const [LineItemDraft('A', unitPriceCents: -1)]),
       throwsArgumentError,
     );
-    expect(() => repo.save(_d('nope'), []), throwsArgumentError);
-    expect(() => repo.save(_d(vid), [], id: 'missing'), throwsArgumentError);
+    await expectLater(() => repo.save(_d('nope'), []), throwsArgumentError);
+    await expectLater(
+      () => repo.save(_d(vid), [], id: 'missing'),
+      throwsArgumentError,
+    );
     expect(await list(), isEmpty);
   });
 
   test('save with deleted id throws', () async {
     final id = await repo.save(_d(vid), []);
     await repo.softDelete(id);
-    expect(() => repo.save(_d(vid), [], id: id), throwsArgumentError);
+    await expectLater(
+      () => repo.save(_d(vid), [], id: id),
+      throwsArgumentError,
+    );
   });
 
   test('trims title', () async {

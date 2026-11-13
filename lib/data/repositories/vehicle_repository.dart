@@ -117,14 +117,18 @@ class VehicleRepository {
       if (parentIds.isNotEmpty) {
         await (_db.update(_db.lineItems)
               ..where((i) => i.parentId.isIn(parentIds) & i.deletedAt.isNull()))
-            .write(LineItemsCompanion(deletedAt: stamp));
+            .write(LineItemsCompanion(deletedAt: stamp, updatedAt: Value(now)));
       }
-      await (_db.update(_db.modifications)
-            ..where((m) => m.vehicleId.equals(id) & m.deletedAt.isNull()))
-          .write(ModificationsCompanion(deletedAt: stamp));
-      await (_db.update(_db.maintenanceRecords)
-            ..where((m) => m.vehicleId.equals(id) & m.deletedAt.isNull()))
-          .write(MaintenanceRecordsCompanion(deletedAt: stamp));
+      await (_db.update(
+        _db.modifications,
+      )..where((m) => m.vehicleId.equals(id) & m.deletedAt.isNull())).write(
+        ModificationsCompanion(deletedAt: stamp, updatedAt: Value(now)),
+      );
+      await (_db.update(
+        _db.maintenanceRecords,
+      )..where((m) => m.vehicleId.equals(id) & m.deletedAt.isNull())).write(
+        MaintenanceRecordsCompanion(deletedAt: stamp, updatedAt: Value(now)),
+      );
       await (_db.update(_db.vehicles)
             ..where((v) => v.id.equals(id) & v.deletedAt.isNull()))
           .write(VehiclesCompanion(deletedAt: stamp, updatedAt: Value(now)));
