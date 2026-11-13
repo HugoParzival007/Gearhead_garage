@@ -5,8 +5,11 @@ import '../../app/theme.dart';
 import '../../core/money.dart';
 import '../../data/database/app_database.dart';
 import '../../data/database/enums.dart';
+import '../../data/models/drafts.dart';
+import '../../data/models/records.dart';
 import '../../domain/cost_summary.dart';
 import '../../domain/timeline.dart';
+import '../garage/vehicle_form_page.dart';
 import '../records/form_fields.dart';
 import '../records/maintenance_form_page.dart';
 import '../records/modification_form_page.dart';
@@ -91,15 +94,41 @@ class VehicleDetailView extends StatelessWidget {
     if (route != null) await navigator.push(route);
   }
 
+  static Future<void> _editVehicle(
+    BuildContext context,
+    Vehicle vehicle,
+  ) async {
+    final bloc = context.read<VehicleDetailBloc>();
+    final draft = await Navigator.of(context).push<VehicleDraft>(
+      MaterialPageRoute(builder: (_) => VehicleFormPage(initial: vehicle)),
+    );
+    if (draft != null) bloc.add(VehicleDetailVehicleEdited(draft));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<VehicleDetailBloc, VehicleDetailState>(
+    return BlocConsumer<VehicleDetailBloc, VehicleDetailState>(
+      listenWhen: (prev, next) =>
+          next.errorMessage != null && prev.errorMessage != next.errorMessage,
+      listener: (context, state) =>
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(state.errorMessage!))),
       builder: (context, state) {
         final vehicle = state.vehicle;
         final summary = state.summary;
         final ready = vehicle != null && summary != null;
         return Scaffold(
-          appBar: AppBar(title: Text(vehicle?.nickname ?? nickname)),
+          appBar: AppBar(
+            title: Text(vehicle?.nickname ?? nickname),
+            actions: [
+              if (vehicle != null)
+                IconButton(
+                  onPressed: () => _editVehicle(context, vehicle),
+                  tooltip: 'Editar veículo',
+                  icon: const Icon(Icons.edit_outlined),
+                ),
+            ],
+          ),
           floatingActionButton: ready
               ? FloatingActionButton.extended(
                   onPressed: () => _addRecord(context, vehicle.id),
@@ -356,7 +385,7 @@ class _TimelineRow extends StatelessWidget {
     ) = switch (entry) {
       ModificationEntry(:final value) => (
         value.modification.title,
-        _modDetail(value.modification, value.totalCents),
+        _modDetail(value),
         _Stamp(
           value.modification.status.label,
           color: switch (value.modification.status) {
@@ -442,13 +471,14 @@ class _TimelineRow extends StatelessWidget {
     );
   }
 
-  static String _modDetail(Modification m, int totalCents) {
+  static String _modDetail(ModificationWithItems value) {
+    final m = value.modification;
     final category = m.category.label;
-    if (m.status == ModificationStatus.planned && totalCents == 0) {
+    if (m.status == ModificationStatus.planned && !hasRecordedCost(value)) {
       final est = m.estimatedCostCents;
       return est == null ? category : '$category · estimado ${formatBrl(est)}';
     }
-    return '$category · ${formatBrl(totalCents)}';
+    return '$category · ${formatBrl(value.totalCents)}';
   }
 }
 

@@ -242,6 +242,82 @@ void main() {
       );
     });
 
+    testWidgets('edit mode pre-fills every field and pops the edited draft', (
+      tester,
+    ) async {
+      final initial = Vehicle(
+        id: 'v1',
+        createdAt: DateTime.utc(2026),
+        updatedAt: DateTime.utc(2026),
+        vehicleType: VehicleType.motorcycle,
+        nickname: 'Cebolinha',
+        make: 'Honda',
+        model: 'CB 300',
+        version: 'Twister',
+        year: 2015,
+        engine: '300cc',
+        fuelType: FuelType.gasoline,
+        currentKm: 12345,
+        plate: 'ABC1D23',
+        projectBudgetCents: 150050,
+      );
+      VehicleDraft? result;
+      await tester.pumpWidget(
+        _host(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                result = await Navigator.of(context).push<VehicleDraft>(
+                  MaterialPageRoute(
+                    builder: (_) => VehicleFormPage(initial: initial),
+                  ),
+                );
+              },
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('abrir'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Editar veículo'), findsOneWidget);
+      String text(String label) =>
+          tester.widget<TextFormField>(field(label)).controller!.text;
+      expect(text('Apelido'), 'Cebolinha');
+      expect(text('Marca'), 'Honda');
+      expect(text('Modelo'), 'CB 300');
+      expect(text('Versão (opcional)'), 'Twister');
+      expect(text('Ano (opcional)'), '2015');
+      expect(text('Motor (opcional)'), '300cc');
+      expect(text('Quilometragem atual'), '12345');
+      expect(text('Placa (opcional)'), 'ABC1D23');
+      expect(text('Orçamento do projeto (R\$)'), '1.500,50');
+      expect(find.text('Gasolina'), findsOneWidget);
+
+      final budget = field('Orçamento do projeto (R\$)');
+      await tester.ensureVisible(budget);
+      await tester.enterText(budget, '20.000');
+      await save(tester);
+
+      expect(
+        result,
+        const VehicleDraft(
+          vehicleType: VehicleType.motorcycle,
+          nickname: 'Cebolinha',
+          make: 'Honda',
+          model: 'CB 300',
+          version: 'Twister',
+          year: 2015,
+          engine: '300cc',
+          fuelType: FuelType.gasoline,
+          currentKm: 12345,
+          plate: 'ABC1D23',
+          projectBudgetCents: 2000000,
+        ),
+      );
+    });
+
     testWidgets('nickname is limited to 60 characters', (tester) async {
       await tester.pumpWidget(_host(const VehicleFormPage()));
 

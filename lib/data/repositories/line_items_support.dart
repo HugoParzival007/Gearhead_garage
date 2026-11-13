@@ -123,7 +123,12 @@ class LineItemsSupport {
                     i.parentId.isIn(parentIds) &
                     i.deletedAt.isNull(),
               )
-              ..orderBy([(i) => OrderingTerm.asc(i.createdAt)]))
+              // Items saved together share createdAt: rowid keeps their
+              // insertion order.
+              ..orderBy([
+                (i) => OrderingTerm.asc(i.createdAt),
+                (i) => OrderingTerm.asc(i.rowId),
+              ]))
             .get();
     final map = <String, List<LineItem>>{};
     for (final r in rows) {

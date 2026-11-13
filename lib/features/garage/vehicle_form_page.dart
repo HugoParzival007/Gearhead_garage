@@ -3,12 +3,17 @@ import 'package:material_ui/material_ui.dart';
 
 import '../../app/theme.dart';
 import '../../core/money.dart';
+import '../../data/database/app_database.dart';
 import '../../data/database/enums.dart';
 import '../../data/models/drafts.dart';
 
-/// Vehicle registration form. Pops the [VehicleDraft] on save.
+/// Vehicle form: registration or, with [initial], editing. Pops the
+/// [VehicleDraft] on save.
 class VehicleFormPage extends StatefulWidget {
-  const VehicleFormPage({super.key});
+  const VehicleFormPage({super.key, this.initial});
+
+  /// Vehicle being edited; null registers a new one.
+  final Vehicle? initial;
 
   /// Same limit the repository and the schema enforce.
   static const nicknameMaxLength = 60;
@@ -32,6 +37,28 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
   VehicleType? _type;
   FuelType? _fuel;
   var _autovalidate = AutovalidateMode.disabled;
+
+  @override
+  void initState() {
+    super.initState();
+    final v = widget.initial;
+    if (v == null) return;
+    _type = v.vehicleType;
+    _fuel = v.fuelType;
+    _nickname.text = v.nickname;
+    _make.text = v.make;
+    _model.text = v.model;
+    _version.text = v.version ?? '';
+    _year.text = v.year?.toString() ?? '';
+    _engine.text = v.engine ?? '';
+    _km.text = v.currentKm.toString();
+    _plate.text = v.plate ?? '';
+    final budget = v.projectBudgetCents;
+    // Without "R$ ": the label already says it; parseBrlToCents reads it back.
+    _budget.text = budget == null
+        ? ''
+        : formatBrl(budget).replaceFirst('R\$ ', '');
+  }
 
   @override
   void dispose() {
@@ -123,7 +150,9 @@ class _VehicleFormPageState extends State<VehicleFormPage> {
     const gap = SizedBox(height: 16);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Novo veículo')),
+      appBar: AppBar(
+        title: Text(widget.initial == null ? 'Novo veículo' : 'Editar veículo'),
+      ),
       body: SafeArea(
         child: Form(
           key: _formKey,

@@ -181,7 +181,7 @@ class _LineItemRow extends StatelessWidget {
             ),
             IconButton(
               onPressed: onRemove,
-              tooltip: 'Remover peça',
+              tooltip: 'Remover peça ${index + 1}',
               icon: const Icon(Icons.close),
             ),
           ],

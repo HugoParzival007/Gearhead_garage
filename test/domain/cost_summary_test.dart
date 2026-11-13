@@ -69,6 +69,60 @@ void main() {
     expect(s.spentByCategory, isEmpty);
   });
 
+  test('planned with only zero-priced parts uses the estimate', () {
+    final zeroPriced = mod(
+      id: 'p',
+      status: ModificationStatus.planned,
+      estimatedCostCents: 30000,
+      items: [
+        item(
+          parentId: 'p',
+          parentType: LineItemParent.modification,
+          unitPriceCents: 0,
+        ),
+      ],
+    );
+    expect(hasRecordedCost(zeroPriced), isFalse);
+    final s = CostSummary.compute(mods: [zeroPriced], maintenance: const []);
+    expect(s.plannedCents, 30000);
+  });
+
+  test('hasRecordedCost: live parts or labor above zero', () {
+    expect(hasRecordedCost(mod(laborCostCents: 1)), isTrue);
+    expect(hasRecordedCost(mod()), isFalse);
+    expect(
+      hasRecordedCost(
+        mod(
+          id: 'q',
+          items: [
+            item(
+              parentId: 'q',
+              parentType: LineItemParent.modification,
+              unitPriceCents: 500,
+            ),
+          ],
+        ),
+      ),
+      isTrue,
+    );
+    expect(
+      hasRecordedCost(
+        mod(
+          id: 'd',
+          items: [
+            item(
+              parentId: 'd',
+              parentType: LineItemParent.modification,
+              unitPriceCents: 500,
+              deletedAt: DateTime.utc(2026, 2),
+            ),
+          ],
+        ),
+      ),
+      isFalse,
+    );
+  });
+
   test('no budget -> null budget and remaining', () {
     final s = CostSummary.compute(mods: [mod()], maintenance: const []);
     expect(s.budgetCents, isNull);

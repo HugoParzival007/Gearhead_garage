@@ -11,6 +11,11 @@ int _liveItemsTotal(List<LineItem> items) => items
 int _modTotal(ModificationWithItems m) =>
     _liveItemsTotal(m.items) + m.modification.laborCostCents;
 
+/// Whether a modification has a recorded cost: live parts plus labor above
+/// zero. A planned one without it counts (and shows) its estimate instead.
+/// Single rule for [CostSummary] and the timeline.
+bool hasRecordedCost(ModificationWithItems m) => _modTotal(m) > 0;
+
 int _maintTotal(MaintenanceWithItems m) =>
     _liveItemsTotal(m.items) + m.record.laborCostCents;
 
@@ -60,9 +65,7 @@ class CostSummary extends Equatable {
             byCategory[mod.category] = (byCategory[mod.category] ?? 0) + total;
           }
         case ModificationStatus.planned:
-          final hasCost =
-              mod.laborCostCents > 0 || m.items.any((i) => i.deletedAt == null);
-          planned += hasCost ? total : (mod.estimatedCostCents ?? 0);
+          planned += hasRecordedCost(m) ? total : (mod.estimatedCostCents ?? 0);
       }
     }
     var maintSpent = 0;

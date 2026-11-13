@@ -21,6 +21,10 @@ class DiarioApp extends StatelessWidget {
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         themeMode: ThemeMode.system,
+        // pt-BR from the start: date picker text and its dd/mm/aaaa input.
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        supportedLocales: const [Locale('pt', 'BR')],
+        locale: const Locale('pt', 'BR'),
         home: const GaragePage(),
       ),
     );

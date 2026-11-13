@@ -104,6 +104,17 @@ void main() {
     expect(deleted.map((i) => i.deletedAt).toSet().length, 1);
   });
 
+  test('items saved together reopen in insertion order', () async {
+    // Same createdAt for all; ids sort differently ('id-10' < 'id-2').
+    final names = [for (var i = 12; i >= 1; i--) 'Peça $i'];
+    await repo.save(_d(vid), [
+      for (final n in names) LineItemDraft(n, unitPriceCents: 100),
+    ]);
+    final m = (await list()).single;
+    expect(m.items.map((i) => i.name), names);
+    expect(m.items.map((i) => i.createdAt).toSet().length, 1);
+  });
+
   test('stream re-emits when only items change', () async {
     final id = await repo.save(_d(vid), const [
       LineItemDraft('A', unitPriceCents: 100),

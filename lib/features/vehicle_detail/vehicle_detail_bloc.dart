@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/database/app_database.dart';
+import '../../data/models/drafts.dart';
 import '../../data/models/records.dart';
 import '../../data/repositories/maintenance_repository.dart';
 import '../../data/repositories/modification_repository.dart';
@@ -23,6 +24,16 @@ final class VehicleDetailStarted extends VehicleDetailEvent {
   const VehicleDetailStarted();
 }
 
+/// Saves the edited vehicle (same id); the watch stream shows the result.
+final class VehicleDetailVehicleEdited extends VehicleDetailEvent {
+  const VehicleDetailVehicleEdited(this.draft);
+
+  final VehicleDraft draft;
+
+  @override
+  List<Object?> get props => [draft];
+}
+
 enum VehicleDetailStatus { loading, ready, notFound, failure }
 
 class VehicleDetailState extends Equatable {
@@ -31,6 +42,7 @@ class VehicleDetailState extends Equatable {
     this.vehicle,
     this.timeline = const [],
     this.summary,
+    this.errorMessage,
   });
 
   final VehicleDetailStatus status;
@@ -38,8 +50,11 @@ class VehicleDetailState extends Equatable {
   final List<TimelineEntry> timeline;
   final CostSummary? summary;
 
+  /// Set when saving the edited vehicle fails; cleared by the next update.
+  final String? errorMessage;
+
   @override
-  List<Object?> get props => [status, vehicle, timeline, summary];
+  List<Object?> get props => [status, vehicle, timeline, summary, errorMessage];
 }
 
 /// Latest value of each source stream.
@@ -57,7 +72,10 @@ class VehicleDetailBloc extends Bloc<VehicleDetailEvent, VehicleDetailState> {
     required this._maintenance,
   }) : super(const VehicleDetailState()) {
     on<VehicleDetailStarted>(_onStarted);
+    on<VehicleDetailVehicleEdited>(_onVehicleEdited);
   }
+
+  static const saveError = 'Não foi possível salvar o veículo.';
 
   final String vehicleId;
   final VehicleRepository _vehicles;
@@ -94,6 +112,25 @@ class VehicleDetailBloc extends Bloc<VehicleDetailEvent, VehicleDetailState> {
         summary: state.summary,
       ),
     );
+  }
+
+  Future<void> _onVehicleEdited(
+    VehicleDetailVehicleEdited event,
+    Emitter<VehicleDetailState> emit,
+  ) async {
+    try {
+      await _vehicles.update(vehicleId, event.draft);
+    } on Object {
+      emit(
+        VehicleDetailState(
+          status: state.status,
+          vehicle: state.vehicle,
+          timeline: state.timeline,
+          summary: state.summary,
+          errorMessage: saveError,
+        ),
+      );
+    }
   }
 
   /// Emits the latest of the three streams once each has emitted at least

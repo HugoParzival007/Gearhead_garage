@@ -2,11 +2,13 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:diario_de_garagem/app/theme.dart';
 import 'package:diario_de_garagem/data/database/app_database.dart';
 import 'package:diario_de_garagem/data/database/enums.dart';
+import 'package:diario_de_garagem/data/models/drafts.dart';
 import 'package:diario_de_garagem/data/models/records.dart';
 import 'package:diario_de_garagem/data/repositories/maintenance_repository.dart';
 import 'package:diario_de_garagem/data/repositories/modification_repository.dart';
 import 'package:diario_de_garagem/domain/cost_summary.dart';
 import 'package:diario_de_garagem/domain/timeline.dart';
+import 'package:diario_de_garagem/features/garage/vehicle_form_page.dart';
 import 'package:diario_de_garagem/features/records/maintenance_form_page.dart';
 import 'package:diario_de_garagem/features/records/modification_form_page.dart';
 import 'package:diario_de_garagem/features/vehicle_detail/budget_gauge.dart';
@@ -121,6 +123,12 @@ void main() {
       findsOneWidget,
     );
     expect(find.byType(BudgetGauge), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(
+        'Acima do orçamento em R\$ 200,00. Gasto R\$ 1.200,00 de R\$ 1.000,00',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('no budget: only "Gasto", no gauge', (tester) async {
@@ -224,6 +232,84 @@ void main() {
     );
     final fab = tester.getRect(find.byType(FloatingActionButton));
     expect(lastRow.bottom, lessThan(fab.top));
+  });
+
+  testWidgets('planned mod with zero-priced parts: estimate in row and total', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      _ready(
+        mods: [
+          mod(
+            id: 'z',
+            status: ModificationStatus.planned,
+            estimatedCostCents: 30000,
+            items: [
+              item(
+                parentId: 'z',
+                parentType: LineItemParent.modification,
+                unitPriceCents: 0,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('Planejado: R\$ 300,00'), findsOneWidget);
+    final row = find.text(keepMoneyTogether('Outros · estimado R\$ 300,00'));
+    await tester.scrollUntilVisible(row, 200);
+    expect(row, findsOneWidget);
+  });
+
+  testWidgets('app bar edit action opens the pre-filled vehicle form', (
+    tester,
+  ) async {
+    await pump(tester, _ready(budget: 500000));
+
+    final edit = find.byTooltip('Editar veículo');
+    expect(edit, findsOneWidget);
+    // Tap target, padded by the theme around the 40dp visual button.
+    final size = tester.getSize(
+      find.ancestor(of: edit, matching: find.byType(IconButton)),
+    );
+    expect(size.width, greaterThanOrEqualTo(48));
+    expect(size.height, greaterThanOrEqualTo(48));
+
+    await tester.tap(edit);
+    await tester.pumpAndSettle();
+    expect(find.byType(VehicleFormPage), findsOneWidget);
+    expect(
+      tester
+          .widget<TextFormField>(
+            find.widgetWithText(TextFormField, 'Orçamento do projeto (R\$)'),
+          )
+          .controller!
+          .text,
+      '5.000,00',
+    );
+
+    final save = find.widgetWithText(FilledButton, 'Salvar veículo');
+    await tester.ensureVisible(save);
+    await tester.tap(save);
+    await tester.pumpAndSettle();
+
+    verify(
+      () => bloc.add(
+        const VehicleDetailVehicleEdited(
+          VehicleDraft(
+            vehicleType: VehicleType.car,
+            nickname: 'Golzinho',
+            make: 'VW',
+            model: 'Gol',
+            fuelType: FuelType.flex,
+            currentKm: 123456,
+            projectBudgetCents: 500000,
+          ),
+        ),
+      ),
+    ).called(1);
   });
 
   testWidgets('notFound shows a message', (tester) async {

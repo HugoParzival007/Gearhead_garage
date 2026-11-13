@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:diario_de_garagem/data/database/app_database.dart';
 import 'package:diario_de_garagem/data/database/enums.dart';
+import 'package:diario_de_garagem/data/models/drafts.dart';
 import 'package:diario_de_garagem/data/models/records.dart';
 import 'package:diario_de_garagem/data/repositories/maintenance_repository.dart';
 import 'package:diario_de_garagem/data/repositories/modification_repository.dart';
@@ -159,6 +160,43 @@ void main() {
       ),
     ],
   );
+
+  group('VehicleDetailVehicleEdited', () {
+    const draft = VehicleDraft(
+      vehicleType: VehicleType.car,
+      nickname: 'Golzinho',
+      make: 'VW',
+      model: 'Gol',
+      fuelType: FuelType.flex,
+      currentKm: 50000,
+      projectBudgetCents: 1500000,
+    );
+
+    blocTest<VehicleDetailBloc, VehicleDetailState>(
+      'calls update with the same id',
+      setUp: () =>
+          when(() => vehicles.update('v', draft)).thenAnswer((_) async {}),
+      build: build,
+      act: (bloc) => bloc.add(const VehicleDetailVehicleEdited(draft)),
+      expect: () => const <VehicleDetailState>[],
+      verify: (_) => verify(() => vehicles.update('v', draft)).called(1),
+    );
+
+    blocTest<VehicleDetailBloc, VehicleDetailState>(
+      'update failure sets the error message',
+      setUp: () =>
+          when(() => vehicles.update('v', draft)).thenThrow(StateError('disk')),
+      build: build,
+      act: (bloc) => bloc.add(const VehicleDetailVehicleEdited(draft)),
+      expect: () => [
+        isA<VehicleDetailState>().having(
+          (s) => s.errorMessage,
+          'errorMessage',
+          VehicleDetailBloc.saveError,
+        ),
+      ],
+    );
+  });
 
   test('close cancels the three subscriptions', () async {
     final v = StreamController<Vehicle?>();

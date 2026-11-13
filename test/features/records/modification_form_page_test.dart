@@ -106,7 +106,9 @@ void main() {
       await tapVisible(tester, add);
       expect(field('Nome da peça'), findsNWidgets(2));
 
-      await tapVisible(tester, find.byTooltip('Remover peça').first);
+      expect(find.byTooltip('Remover peça 1'), findsOneWidget);
+      expect(find.byTooltip('Remover peça 2'), findsOneWidget);
+      await tapVisible(tester, find.byTooltip('Remover peça 1'));
       expect(field('Nome da peça'), findsOneWidget);
     });
 

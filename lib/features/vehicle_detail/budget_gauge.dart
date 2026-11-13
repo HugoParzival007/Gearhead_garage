@@ -25,7 +25,8 @@ String budgetText(CostSummary s) {
 }
 
 /// Budget block of the vehicle detail: text plus, with a budget, the gauge.
-/// Read as a single node by screen readers, with the same text.
+/// Read as a single node by screen readers, with the same text (both lines
+/// when over budget).
 class BudgetBlock extends StatelessWidget {
   const BudgetBlock({super.key, required this.summary});
 
@@ -37,6 +38,9 @@ class BudgetBlock extends StatelessWidget {
     final text = budgetText(summary);
     final budget = summary.budgetCents;
     final over = (summary.remainingCents ?? 0) < 0;
+    final overLine = over && budget != null
+        ? 'Gasto ${formatBrl(summary.spentCents)} de ${formatBrl(budget)}'
+        : null;
     final red = AppColors.legible(AppColors.faixaVermelha, theme.brightness);
     final style = theme.textTheme.titleLarge
         ?.merge(AppFonts.figures)
@@ -44,18 +48,16 @@ class BudgetBlock extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: text,
+      label: overLine == null ? text : '$text. $overLine',
       excludeSemantics: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(keepMoneyTogether(text), style: style),
-          if (over && budget != null) ...[
+          if (overLine != null) ...[
             const SizedBox(height: 2),
             Text(
-              keepMoneyTogether(
-                'Gasto ${formatBrl(summary.spentCents)} de ${formatBrl(budget)}',
-              ),
+              keepMoneyTogether(overLine),
               style: theme.textTheme.bodyMedium
                   ?.merge(AppFonts.figures)
                   .copyWith(
