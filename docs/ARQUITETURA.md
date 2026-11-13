@@ -15,7 +15,8 @@ UI (`features/`) → BLoC/Cubit → repositórios (`data/repositories/`) → Dri
 - Dinheiro sempre em centavos (`int`); proibido `double` para valores monetários. Distância em km (`int`).
 - Datas gravadas como texto ISO-8601 (`store_date_time_values_as_text: true` em `build.yaml`).
 - Enums gravados como texto (`textEnum<T>()`), nunca índice inteiro.
-- Textos da UI em pt-BR, direto no código no M1a (l10n depois).
+- Textos da UI em pt-BR, direto no código no M1a (l10n depois). O `MaterialApp` fixa o locale `pt_BR` com `GlobalMaterialLocalizations.delegates` (exportado por `material_ui`, sem dependência nova): seletor de data, botões e textos do Material em português, e digitação de data no formato dd/mm/aaaa.
+- A UI importa `package:material_ui/material_ui.dart`; `package:flutter/material.dart` está obsoleto no Flutter 3.50.
 - Nenhum dado sai do aparelho no M1a: sem pacotes de rede, analytics ou Firebase.
 - `flutter analyze` sem avisos e `flutter test` verde ao fim de cada tarefa.
 - Commits em Conventional Commits, em inglês.

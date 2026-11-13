@@ -6,7 +6,7 @@ Status: M1a (fundação) concluído; falta a verificação manual no emulador (a
 
 ## Pré-requisitos
 
-- Flutter stable (Dart 3). Confira com `flutter --version`.
+- Flutter 3.50 ou mais novo (Dart 3.14 ou mais novo). Confira com `flutter --version`.
 - Android SDK e um emulador ou aparelho para `flutter run`.
 
 ## Comandos
@@ -27,6 +27,8 @@ Sem emulador no ambiente de desenvolvimento do M1a; conferir num aparelho ou emu
 - [ ] Garagem vazia: texto, descrição e botão; modo claro e escuro seguem o sistema.
 - [ ] Cadastrar um carro e uma moto: ícones, selo "Selecionado" no recém-criado, botão amarelo.
 - [ ] Fechar e reabrir o app: o veículo selecionado continua o mesmo.
+- [ ] Detalhe do veículo: "Editar veículo" na barra superior abre o formulário preenchido; incluir um orçamento e salvar atualiza o medidor.
+- [ ] Seletor de data em português (meses, "Cancelar"/"Confirmar") e digitação no formato dd/mm/aaaa.
 - [ ] Formulário de veículo: mensagens de obrigatório; orçamento "abc", "1.234,567" e "R$ 15.000,00"; apelido limitado a 60; teclado só com números no km.
 - [ ] Detalhe do veículo: criar mod planejada com custo estimado (entra em "Planejado"), editar para "Instalada" com peças (sai de "Planejado" e entra em "Gasto").
 - [ ] Excluir uma manutenção (com confirmação): some da linha do tempo e dos totais.
