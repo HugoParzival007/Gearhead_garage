@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="diario_de_garagem"
+        android:label="Diário de Garagem"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
